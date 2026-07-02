@@ -1,0 +1,22 @@
+{
+    "original_shape": [
+        284807,
+        7
+    ],
+    "deduplicated_shape": [
+        284807,
+        7
+    ],
+    "train_shape": [
+        227845,
+        5
+    ],
+    "test_shape": [
+        56962,
+        5
+    ],
+    "recommended_scaler": "robust",
+    "recommended_balancing": "random_over_sampling",
+    "dropped_constant_columns": [],
+    "dropped_collinear_columns": []
+}

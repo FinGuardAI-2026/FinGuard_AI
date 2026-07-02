@@ -1,0 +1,79 @@
+[
+    {
+        "model": "decision_tree",
+        "f1": 0.01158860453887011,
+        "recall": 0.12244897959183673,
+        "precision": 0.006082108464267613,
+        "accuracy": 0.9640637618061163,
+        "roc_auc": 0.5445606703570567,
+        "pr_auc": 0.0197184842551202,
+        "training_time_s": 11.087713479995728,
+        "inference_time_per_sample_ms": 0.0001410956480024169,
+        "best_params": {
+            "max_depth": null,
+            "min_samples_split": 2
+        }
+    },
+    {
+        "model": "lightgbm",
+        "f1": 0.01003737319807795,
+        "recall": 0.47959183673469385,
+        "precision": 0.005071760008632783,
+        "accuracy": 0.8372423721077209,
+        "roc_auc": 0.7324582354748315,
+        "pr_auc": 0.010499520189194807,
+        "training_time_s": 9.149020195007324,
+        "inference_time_per_sample_ms": 0.000987539783270313,
+        "best_params": {
+            "learning_rate": 0.1,
+            "max_depth": 6,
+            "n_estimators": 100
+        }
+    },
+    {
+        "model": "xgboost",
+        "f1": 0.009509451467006842,
+        "recall": 0.41836734693877553,
+        "precision": 0.004809384164222874,
+        "accuracy": 0.8500579333590815,
+        "roc_auc": 0.7183902085032099,
+        "pr_auc": 0.005722369848550185,
+        "training_time_s": 28.966390132904053,
+        "inference_time_per_sample_ms": 0.0025278681228052117,
+        "best_params": {
+            "learning_rate": 0.1,
+            "max_depth": 6,
+            "n_estimators": 100
+        }
+    },
+    {
+        "model": "random_forest",
+        "f1": 0.008662175168431183,
+        "recall": 0.09183673469387756,
+        "precision": 0.004545454545454545,
+        "accuracy": 0.963835539482462,
+        "roc_auc": 0.5711398409954865,
+        "pr_auc": 0.003369646698029083,
+        "training_time_s": 101.90279579162598,
+        "inference_time_per_sample_ms": 0.004514930983330735,
+        "best_params": {
+            "max_depth": 20,
+            "n_estimators": 50
+        }
+    },
+    {
+        "model": "logistic_regression",
+        "f1": 0.0036638424547744447,
+        "recall": 0.4897959183673469,
+        "precision": 0.0018387986515476554,
+        "accuracy": 0.5416944629753169,
+        "roc_auc": 0.5229512879997245,
+        "pr_auc": 0.0018742205706884744,
+        "training_time_s": 2.814939260482788,
+        "inference_time_per_sample_ms": 0.0001488724416538109,
+        "best_params": {
+            "C": 1.0,
+            "penalty": "l2"
+        }
+    }
+]

@@ -1,0 +1,76 @@
+[
+  {
+    "transaction_id": "TX-2024-00449872",
+    "risk_level": "Critical",
+    "risk_score": 91.5,
+    "fraud_probability": 87.3,
+    "prediction": "FRAUD",
+    "reports": [
+      {
+        "type": "fraud_investigation",
+        "file": "fraud_investigation_report.md",
+        "generated_at": "2026-06-27T19:42:56.803796+00:00",
+        "char_count": 1415,
+        "model": "offline-simulation"
+      },
+      {
+        "type": "analyst_summary",
+        "file": "analyst_summary.md",
+        "generated_at": "2026-06-27T19:42:56.804860+00:00",
+        "char_count": 794,
+        "model": "offline-simulation"
+      },
+      {
+        "type": "executive_summary",
+        "file": "executive_summary.md",
+        "generated_at": "2026-06-27T19:42:56.806448+00:00",
+        "char_count": 1035,
+        "model": "offline-simulation"
+      },
+      {
+        "type": "customer_notification",
+        "file": "customer_notification.md",
+        "generated_at": "2026-06-27T19:42:56.807502+00:00",
+        "char_count": 1051,
+        "model": "offline-simulation"
+      }
+    ]
+  },
+  {
+    "transaction_id": "TX-2024-00449872",
+    "risk_level": "Critical",
+    "risk_score": 91.5,
+    "fraud_probability": 87.3,
+    "prediction": "FRAUD",
+    "reports": [
+      {
+        "type": "fraud_investigation",
+        "file": "fraud_investigation_report.md",
+        "generated_at": "2026-06-27T19:43:11.562674+00:00",
+        "char_count": 1415,
+        "model": "offline-simulation"
+      },
+      {
+        "type": "analyst_summary",
+        "file": "analyst_summary.md",
+        "generated_at": "2026-06-27T19:43:11.564252+00:00",
+        "char_count": 794,
+        "model": "offline-simulation"
+      },
+      {
+        "type": "executive_summary",
+        "file": "executive_summary.md",
+        "generated_at": "2026-06-27T19:43:11.565582+00:00",
+        "char_count": 1035,
+        "model": "offline-simulation"
+      },
+      {
+        "type": "customer_notification",
+        "file": "customer_notification.md",
+        "generated_at": "2026-06-27T19:43:11.567789+00:00",
+        "char_count": 1051,
+        "model": "offline-simulation"
+      }
+    ]
+  }
+]

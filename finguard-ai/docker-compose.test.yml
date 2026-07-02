@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend-test:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: finguard-backend-test
+    env_file:
+      - .env.test
+    environment:
+      - DATABASE_URL=mongodb://mongodb-test:27017/finguard_test
+    command: pytest tests/ -v
+    depends_on:
+      - mongodb-test
+
+  frontend-test:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: finguard-frontend-test
+    command: npm run lint
+
+  mongodb-test:
+    image: mongo:6.0
+    container_name: finguard-mongodb-test
