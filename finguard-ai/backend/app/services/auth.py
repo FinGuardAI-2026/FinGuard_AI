@@ -4,6 +4,7 @@ from app.repositories.user import UserRepository
 from app.core.security.crypto import hash_password, verify_password, create_jwt_token, decode_jwt_token
 from app.schemas.auth import RegisterRequest, LoginRequest
 from app.models.user import UserDB
+from app.core.config import settings
 
 class AuthService:
     """Service layer orchestrating authentication, token generation, and profile creations."""
@@ -65,6 +66,8 @@ class AuthService:
             {"last_login": now, "updated_at": now}
         )
         user["last_login"] = now
+
+        # print("LOGIN SECRET:", settings.JWT_SECRET)
 
         # Generate tokens
         access_token, refresh_token = self.generate_auth_tokens(user)

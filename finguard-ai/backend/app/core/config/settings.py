@@ -41,8 +41,8 @@ class Settings(BaseSettings):
 
 # Instantiate config
 settings = Settings()
-# print("MONGODB_URI =", settings.MONGODB_URI)
-# print("DATABASE_NAME =", settings.DATABASE_NAME)
+# # print("MONGODB_URI =", settings.MONGODB_URI)
+# # print("DATABASE_NAME =", settings.DATABASE_NAME)
 # print("JWT_SECRET =", settings.JWT_SECRET)
-# print("ENV =", settings.ENVIRONMENT)
-# print("GEMINI =", settings.GEMINI_API_KEY)
+# # print("ENV =", settings.ENVIRONMENT)
+# # print("GEMINI =", settings.GEMINI_API_KEY)

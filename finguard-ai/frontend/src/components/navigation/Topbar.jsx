@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Search, Bell, Shield, Activity, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export function Topbar({ isCollapsed }) {
   const { user } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [search, setSearch] = useState('');
 
   const notifications = [
     { id: 1, title: 'Critical Risk Alert', desc: 'Transaction TXN-8821 flagged with 91.5 risk score.', time: '2m ago', type: 'critical' },
@@ -14,17 +16,17 @@ export function Topbar({ isCollapsed }) {
 
   return (
     <header
-      className={`fixed top-0 right-0 z-30 h-16 glass border-b border-slate-800/80 transition-all duration-300 flex items-center justify-between px-6 ${
-        isCollapsed ? 'left-20' : 'left-64'
-      }`}
+      className={`fixed top-0 right-0 z-30 h-16 glass border-b border-slate-800/80 transition-all duration-300 flex items-center justify-between px-6 ${isCollapsed ? 'left-20' : 'left-64'
+        }`}
     >
       {/* Search Bar */}
       <div className="relative w-72">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
         <input
           type="text"
-          placeholder="Search transaction ID, IP, device..."
-          className="w-full bg-slate-900/80 border border-slate-800 rounded-lg pl-9 pr-4 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-colors"
+          placeholder="Global Search (Coming Soon)"
+          className="w-full bg-slate-900/80 border border-slate-800 rounded-lg pl-9 pr-4 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-colors cursor-not-allowed opacity-60"
+          disabled
         />
       </div>
 

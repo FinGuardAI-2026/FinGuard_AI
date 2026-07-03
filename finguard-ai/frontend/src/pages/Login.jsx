@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { Card, Button, Input } from '../components/ui';
-import { ShieldAlert, Lock, User, Sparkles } from 'lucide-react';
+import { ShieldAlert, Lock, User} from 'lucide-react';
 
 export function Login() {
-  const [username, setUsername] = useState('analyst');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
@@ -18,7 +18,7 @@ export function Login() {
     setError('');
     setIsLoading(true);
     try {
-      await login(username, password);
+      await login(email, password);
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.detail || 'Authentication failed. Please check credentials.');
@@ -48,13 +48,13 @@ export function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            label="Username / Email"
+            label="Email"
             type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
             icon={User}
-            placeholder="Enter your username"
+            placeholder="Enter your email"
           />
           <Input
             label="Password"
@@ -70,12 +70,6 @@ export function Login() {
             Sign In to Workspace
           </Button>
         </form>
-
-        <div className="mt-6 pt-4 border-t border-slate-800 text-center">
-          <span className="text-[11px] text-slate-500 flex items-center justify-center gap-1">
-            <Sparkles size={12} className="text-cyan-400" /> Demo Credentials: analyst / admin
-          </span>
-        </div>
       </Card>
     </AuthLayout>
   );

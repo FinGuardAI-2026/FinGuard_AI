@@ -1,0 +1,39 @@
+[
+  {
+    "transaction_id": "TXN-LEGIT-2123",
+    "risk_level": "Low",
+    "risk_score": 0.01,
+    "fraud_probability": 0.0,
+    "prediction": "GENUINE",
+    "reports": [
+      {
+        "type": "fraud_investigation",
+        "file": "fraud_investigation_report.md",
+        "generated_at": "2026-07-02T21:02:46.082224+00:00",
+        "char_count": 1408,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "analyst_summary",
+        "file": "analyst_summary.md",
+        "generated_at": "2026-07-02T21:02:46.393639+00:00",
+        "char_count": 787,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "executive_summary",
+        "file": "executive_summary.md",
+        "generated_at": "2026-07-02T21:02:46.614595+00:00",
+        "char_count": 1028,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "customer_notification",
+        "file": "customer_notification.md",
+        "generated_at": "2026-07-02T21:02:46.939966+00:00",
+        "char_count": 1044,
+        "model": "gemini-2.5-flash"
+      }
+    ]
+  }
+]

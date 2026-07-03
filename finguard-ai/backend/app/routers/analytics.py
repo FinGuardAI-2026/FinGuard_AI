@@ -489,9 +489,9 @@ async def model_performance():
         / "leaderboard.json"
     )
         
-    print("Current Working Directory:", Path.cwd())
-    print("Looking for:", leaderboard_path.resolve())
-    print("Exists:", leaderboard_path.exists())
+    # print("Current Working Directory:", Path.cwd())
+    # print("Looking for:", leaderboard_path.resolve())
+    # print("Exists:", leaderboard_path.exists())
 
 
     if not leaderboard_path.exists():

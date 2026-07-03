@@ -34,6 +34,12 @@ export function PredictionForm({ onSubmit, isLoading }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const amount = parseFloat(formData.amount);
+
+    if (isNaN(amount) || amount <= 0) {
+      alert("Transaction amount must be greater than 0.");
+      return;
+    }
     const payload = {
       ...formData,
       amount: parseFloat(formData.amount) || 0,
@@ -69,6 +75,30 @@ export function PredictionForm({ onSubmit, isLoading }) {
       V12: '-4.286',
       V14: '-7.042'
     });
+  };
+
+  const resetForm = () => {
+    setFormData({
+      amount: '1250.75',
+      transaction_id: `TXN-202606-${Math.floor(1000 + Math.random() * 9000)}`,
+      merchant_name: 'Amazon Prime',
+      merchant_category: 'E-COMMERCE',
+      payment_method: 'CREDIT_CARD',
+      country: 'USA',
+      ip_address: '203.0.113.42',
+      device_id: 'DEV-A1B2C3D4',
+      generate_reports: true,
+      V1: '-1.359',
+      V2: '-0.072',
+      V3: '2.536',
+      V4: '1.378',
+      V10: '-0.090',
+      V11: '-0.551',
+      V12: '-0.617',
+      V14: '-0.311'
+    });
+
+    setShowAdvanced(false);
   };
 
   return (
@@ -165,13 +195,22 @@ export function PredictionForm({ onSubmit, isLoading }) {
               <option value="ACH">ACH Transfer</option>
             </select>
           </div>
-          <Input
-            label="Country Code"
-            name="country"
-            value={formData.country}
-            onChange={handleChange}
-            icon={Globe}
-          />
+          <div>
+            <label className="fg-label">Country</label>
+            <select
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              className="fg-input"
+            >
+              <option value="USA">USA</option>
+              <option value="IND">India</option>
+              <option value="UK">United Kingdom</option>
+              <option value="RU">Russia</option>
+              <option value="DE">Germany</option>
+              <option value="FR">France</option>
+            </select>
+          </div>
           <Input
             label="IP Address"
             name="ip_address"
@@ -231,6 +270,14 @@ export function PredictionForm({ onSubmit, isLoading }) {
 
         <Button type="submit" variant="primary" isLoading={isLoading} className="w-full py-3 mt-4 text-sm font-bold">
           Run AI Fraud Assessment
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={resetForm}
+          className="w-full mt-2"
+        >
+          Reset Form
         </Button>
       </form>
     </Card>

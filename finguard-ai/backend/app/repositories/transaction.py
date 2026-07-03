@@ -121,7 +121,7 @@ class TransactionRepository(BaseRepository):
             .limit(page_size)
         )
         results = await cursor.to_list(length=page_size)
-        print("Mongo Query:", query)
-        print("Total Found:", total)
-        print("Results:", results)
+        # print("Mongo Query:", query)
+        # print("Total Found:", total)
+        # print("Results:", results)
         return [self._format_result(r) for r in results], total

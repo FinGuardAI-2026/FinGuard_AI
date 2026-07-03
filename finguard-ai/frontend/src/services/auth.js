@@ -1,42 +1,29 @@
 import api from './api';
 
 export const authService = {
-  async login(username, password) {
+  async login(email, password) {
     try {
-      // Form data format expected by OAuth2PasswordRequestForm in FastAPI
-      const formData = new URLSearchParams();
-      formData.append('username', username);
-      formData.append('password', password);
-
-      const response = await api.post('/api/v1/auth/token', formData, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      const response = await api.post('/api/v1/auth/login', {
+        email,
+        password
       });
 
-      const { access_token } = response.data;
-      localStorage.setItem('finguard_token', access_token);
-      
-      // Fetch user profile
-      const userResponse = await api.get('/api/v1/auth/me');
-      const user = userResponse.data;
-      localStorage.setItem('finguard_user', JSON.stringify(user));
+      const {
+        access_token,
+        refresh_token,
+        user
+      } = response.data;
 
-      return { user, token: access_token };
+      localStorage.setItem('finguard_token', access_token);
+      localStorage.setItem('finguard_refresh_token', refresh_token);
+      localStorage.setItem('finguard_user', JSON.stringify(user));
+      // console.log("TOKEN SAVED:", localStorage.getItem("finguard_token"));
+
+      return {
+        user,
+        token: access_token
+      };
     } catch (error) {
-      // Fallback demo mode if backend is not running or credentials match demo
-      if (username === 'admin' || username === 'analyst' || username.includes('@')) {
-        const demoUser = {
-          _id: 'usr_demo_123',
-          username: username,
-          email: `${username}@finguard.ai`,
-          full_name: username === 'admin' ? 'System Administrator' : 'Senior Fraud Analyst',
-          role: username === 'admin' ? 'Admin' : 'Fraud Analyst',
-          created_at: new Date().toISOString()
-        };
-        const demoToken = 'demo_jwt_token_finguard_ai';
-        localStorage.setItem('finguard_token', demoToken);
-        localStorage.setItem('finguard_user', JSON.stringify(demoUser));
-        return { user: demoUser, token: demoToken };
-      }
       throw error;
     }
   },
@@ -54,6 +41,7 @@ export const authService = {
 
   logout() {
     localStorage.removeItem('finguard_token');
+    localStorage.removeItem('finguard_refresh_token');
     localStorage.removeItem('finguard_user');
   }
 };

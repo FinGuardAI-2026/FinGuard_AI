@@ -306,7 +306,7 @@ class PredictionService:
         )
 
         try:
-            print(">>> Saving prediction to MongoDB...")
+            # print(">>> Saving prediction to MongoDB...")
             await self._transaction_repo.insert_one({
                 "transaction_id": transaction_id,
 
@@ -349,7 +349,7 @@ class PredictionService:
                 "created_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow(),
             })
-            print(">>> Prediction saved successfully.")
+            # print(">>> Prediction saved successfully.")
         except Exception as e:
             logger.error(f"Failed to save prediction: {e}")
 
