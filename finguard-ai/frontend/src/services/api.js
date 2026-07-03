@@ -45,7 +45,9 @@ api.interceptors.response.use(
     if (
       error.response &&
       error.response.status === 401 &&
-      !originalRequest._retry
+      !originalRequest._retry &&
+      !originalRequest.url.includes("/auth/login") &&
+      !originalRequest.url.includes("/auth/refresh")
     ) {
 
       originalRequest._retry = true;
@@ -53,6 +55,9 @@ api.interceptors.response.use(
       try {
 
         const refreshToken = localStorage.getItem("finguard_refresh_token");
+        if (!refreshToken) {
+          return Promise.reject(error);
+        }
 
         const response = await axios.post(
           `${API_BASE_URL}/api/v1/auth/refresh`,
