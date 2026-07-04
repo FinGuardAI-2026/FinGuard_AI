@@ -20,7 +20,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 def create_jwt_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
-    print("CREATE SECRET:", repr(settings.JWT_SECRET))
+    # print("CREATE SECRET:", repr(settings.JWT_SECRET))
 
     to_encode = data.copy()
 
@@ -41,7 +41,7 @@ def create_jwt_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = 
 
 
 def decode_jwt_token(token: str):
-    print("DECODE SECRET:", repr(settings.JWT_SECRET))
+    # print("DECODE SECRET:", repr(settings.JWT_SECRET))
 
     verified = jwt.decode(
         token,
