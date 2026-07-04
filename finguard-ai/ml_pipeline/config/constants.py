@@ -54,7 +54,6 @@ INVESTIGATION_STATUSES = [
     "RESOLVED",
 ]
 
-
 # ── Model Artefact Filenames ──────────────────────────────────────────────────
 MODEL_FILENAMES = {
     "logistic_regression": "logistic_regression.joblib",
@@ -65,7 +64,6 @@ MODEL_FILENAMES = {
     "champion":            "champion_model.joblib",
     "preprocessor":        "preprocessor.joblib",
 }
-
 
 # ── Report & Figure Filenames ────────────────────────────────────────────────
 REPORT_DATASET_SUMMARY   = "dataset_summary.md"
