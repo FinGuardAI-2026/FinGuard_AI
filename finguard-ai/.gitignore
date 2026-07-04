@@ -70,8 +70,8 @@ docker-compose.override.yml
 .docker-volumes/
 
 # ML/DL models & artifacts
-*.pkl
-*.joblib
+# *.pkl
+# *.joblib
 *.h5
 *.model
 *.pb
