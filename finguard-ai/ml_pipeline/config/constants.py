@@ -43,6 +43,7 @@ RISK_MEDIUM_MAX   = 60
 RISK_HIGH_MAX     = 85
 # Scores above RISK_HIGH_MAX are Critical
 
+
 # ── Investigation Lifecycle States ───────────────────────────────────────────
 INVESTIGATION_STATUSES = [
     "PENDING_REVIEW",
@@ -52,6 +53,7 @@ INVESTIGATION_STATUSES = [
     "ESCALATED",
     "RESOLVED",
 ]
+
 
 # ── Model Artefact Filenames ──────────────────────────────────────────────────
 MODEL_FILENAMES = {
@@ -63,6 +65,7 @@ MODEL_FILENAMES = {
     "champion":            "champion_model.joblib",
     "preprocessor":        "preprocessor.joblib",
 }
+
 
 # ── Report & Figure Filenames ────────────────────────────────────────────────
 REPORT_DATASET_SUMMARY   = "dataset_summary.md"
