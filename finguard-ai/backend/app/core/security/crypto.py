@@ -20,6 +20,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 def create_jwt_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
+    print("CREATE SECRET:", settings.JWT_SECRET)
     to_encode = data.copy()
 
     if expires_delta:
@@ -49,11 +50,12 @@ def create_jwt_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = 
 #         raise ValueError("Invalid or expired token signature") from e
 
 def decode_jwt_token(token: str):
+    print("DECODE SECRET:", settings.JWT_SECRET)
     # print("=" * 60)
 
     # print("TOKEN =", token)
 
-    payload = jwt.get_unverified_claims(token)
+    # payload = jwt.get_unverified_claims(token)
     # print("UNVERIFIED =", payload)
 
     verified = jwt.decode(

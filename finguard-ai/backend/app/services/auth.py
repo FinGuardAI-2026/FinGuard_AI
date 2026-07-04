@@ -52,6 +52,17 @@ class AuthService:
         """Validates credentials, updates logins, and generates session JWT access/refresh tokens."""
         email_clean = request.email.strip().lower()
         user = await self.user_repo.get_by_email(email_clean)
+        print("EMAIL:", email_clean)
+        print("USER FOUND:", user is not None)
+
+        if user:
+            print("HASH:", user.get("hashed_password"))
+        try:
+            result = verify_password(request.password, user.get("hashed_password", ""))
+            print("VERIFY RESULT:", result)
+        except Exception as e:
+            print("VERIFY ERROR:", repr(e))
+            raise
         
         if not user or not user.get("is_active"):
             raise ValueError("Invalid email or password")
