@@ -210,7 +210,7 @@ class TestPredictionService:
         from app.services.prediction import PredictionService
         reg = registry or _make_registry_mock()
         service = PredictionService(registry=reg)
-        return await service.predict(request)
+        return await service.predict(request, user_id="user_test")
 
     async def test_genuine_prediction_returned(self):
         """Model outputs low fraud probability → GENUINE label."""

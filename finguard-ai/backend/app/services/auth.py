@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Optional
 from app.repositories.user import UserRepository
 from app.core.security.crypto import hash_password, verify_password, create_jwt_token, decode_jwt_token
 from app.schemas.auth import RegisterRequest, LoginRequest
@@ -48,8 +48,14 @@ class AuthService:
             
         return created_user
 
-    async def login_user(self, request: LoginRequest) -> Tuple[Dict[str, Any], str, str]:
+    async def login_user(
+        self,
+        request: LoginRequest,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None
+    ) -> Tuple[Dict[str, Any], str, str]:
         """Validates credentials, updates logins, and generates session JWT access/refresh tokens."""
+        import uuid
         email_clean = request.email.strip().lower()
         user = await self.user_repo.get_by_email(email_clean)
         print("EMAIL:", email_clean)
@@ -68,29 +74,124 @@ class AuthService:
             raise ValueError("Invalid email or password")
             
         if not verify_password(request.password, user.get("hashed_password", "")):
+            # Log failed login attempt in login history
+            ip = ip_address or "Unknown"
+            ua = user_agent or "Unknown"
+            failed_entry = {
+                "id": uuid.uuid4().hex,
+                "timestamp": datetime.utcnow(),
+                "ip_address": ip,
+                "device": ua,
+                "location": "Local Network" if ip in ("127.0.0.1", "localhost", "::1") else "Remote Location",
+                "status": "Failed"
+            }
+            # Add to history
+            history = user.get("login_history", [])
+            history.insert(0, failed_entry)
+            await self.user_repo.update_one(
+                {"_id": user["_id"]},
+                {"$set": {"login_history": history[:20]}}
+            )
             raise ValueError("Invalid email or password")
 
-        # Update last login time
+        # Create active session and log successful login
+        session_id = uuid.uuid4().hex
+        ip = ip_address or "127.0.0.1"
+        ua = user_agent or "Unknown Browser"
+        
+        # Simple UA parsing
+        ua_low = ua.lower()
+        if "windows" in ua_low:
+            os_name = "Windows"
+        elif "macintosh" in ua_low or "mac os" in ua_low:
+            os_name = "macOS"
+        elif "iphone" in ua_low or "ipad" in ua_low:
+            os_name = "iOS"
+        elif "android" in ua_low:
+            os_name = "Android"
+        elif "linux" in ua_low:
+            os_name = "Linux"
+        else:
+            os_name = "Unknown OS"
+
+        if "chrome" in ua_low and "chrome" not in ua_low.split("chrome")[-1]:
+            browser_name = "Chrome"
+        elif "firefox" in ua_low:
+            browser_name = "Firefox"
+        elif "safari" in ua_low and "chrome" not in ua_low:
+            browser_name = "Safari"
+        elif "edge" in ua_low or "edg" in ua_low:
+            browser_name = "Edge"
+        else:
+            browser_name = "Browser"
+
+        if any(m in ua_low for m in ["mobi", "iphone", "android"]):
+            device_type = "Mobile"
+        elif "ipad" in ua_low:
+            device_type = "Tablet"
+        else:
+            device_type = "Desktop"
+
+        location = "Local Network" if ip in ("127.0.0.1", "localhost", "::1") else "Remote Location"
+
+        new_session = {
+            "session_id": session_id,
+            "ip_address": ip,
+            "user_agent": ua,
+            "device_type": device_type,
+            "browser": browser_name,
+            "os": os_name,
+            "location": location,
+            "created_at": datetime.utcnow(),
+            "last_active": datetime.utcnow(),
+        }
+
+        success_entry = {
+            "id": uuid.uuid4().hex,
+            "timestamp": datetime.utcnow(),
+            "ip_address": ip,
+            "device": f"{browser_name} on {os_name}",
+            "location": location,
+            "status": "Success",
+        }
+
+        sessions = user.get("sessions", [])
+        sessions.append(new_session)
+        
+        login_history = user.get("login_history", [])
+        login_history.insert(0, success_entry)
+
+        # Update user doc
         now = datetime.utcnow()
         await self.user_repo.update_one(
             {"_id": user["_id"]},
-            {"last_login": now, "updated_at": now}
+            {
+                "$set": {
+                    "last_login": now,
+                    "updated_at": now,
+                    "sessions": sessions,
+                    "login_history": login_history[:20]
+                }
+            }
         )
         user["last_login"] = now
+        user["sessions"] = sessions
+        user["login_history"] = login_history[:20]
 
-        # print("LOGIN SECRET:", settings.JWT_SECRET)
-
-        # Generate tokens
-        access_token, refresh_token = self.generate_auth_tokens(user)
+        # Generate tokens containing session ID (sid)
+        access_token, refresh_token = self.generate_auth_tokens(user, session_id=session_id)
         return user, access_token, refresh_token
 
-    def generate_auth_tokens(self, user: Dict[str, Any]) -> Tuple[str, str]:
+    def generate_auth_tokens(self, user: Dict[str, Any], session_id: Optional[str] = None) -> Tuple[str, str]:
         """Creates short-term access tokens and long-term session refresh tokens."""
         claims = {
             "sub": str(user["_id"]),
             "email": user["email"],
             "role": user["role"]
         }
+        if session_id:
+            claims["sid"] = session_id
+
         access_token = create_jwt_token(claims, expires_delta=timedelta(minutes=30))
         # Add refresh claim mapping
         claims_refresh = claims.copy()
@@ -113,9 +214,17 @@ class AuthService:
             raise ValueError("Invalid token claims")
 
         user = await self.user_repo.find_one({"_id": user_id})
-        if not user or not user.get("is_active"):
+        if not user or not user.get("is_active") or user.get("is_deleted"):
             raise ValueError("User account is inactive or missing")
 
-        # Issue fresh pairs
-        access_token, new_refresh_token = self.generate_auth_tokens(user)
+        # Validate session ID if present in refresh token claims
+        sid = payload.get("sid")
+        if sid:
+            active_sessions = user.get("sessions", [])
+            session_exists = any(s.get("session_id") == sid for s in active_sessions)
+            if not session_exists:
+                raise ValueError("Session has been revoked or expired")
+
+        # Issue fresh pairs preserving the session ID
+        access_token, new_refresh_token = self.generate_auth_tokens(user, session_id=sid)
         return user, access_token, new_refresh_token

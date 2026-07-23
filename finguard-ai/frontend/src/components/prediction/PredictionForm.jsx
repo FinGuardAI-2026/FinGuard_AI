@@ -1,27 +1,28 @@
 import React, { useState } from 'react';
 import { Card, Button, Input } from '../ui';
-import { ChevronDown, ChevronUp, Sparkles, DollarSign, Globe, Smartphone, CreditCard, Shield } from 'lucide-react';
+import { Sparkles, DollarSign } from 'lucide-react';
 
 export function PredictionForm({ onSubmit, isLoading }) {
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  // const [showAdvanced, setShowAdvanced] = useState(false);
   const [formData, setFormData] = useState({
     amount: '1250.75',
     transaction_id: `TXN-202606-${Math.floor(1000 + Math.random() * 9000)}`,
     merchant_name: 'Amazon Prime',
-    merchant_category: 'E-COMMERCE',
+    merchant_category: 'RETAIL',
     payment_method: 'CREDIT_CARD',
+    transaction_type: 'PURCHASE',
     country: 'USA',
     ip_address: '203.0.113.42',
     device_id: 'DEV-A1B2C3D4',
     generate_reports: true,
-    V1: '-1.359',
-    V2: '-0.072',
-    V3: '2.536',
-    V4: '1.378',
-    V10: '-0.090',
-    V11: '-0.551',
-    V12: '-0.617',
-    V14: '-0.311'
+    // V1: '-1.359',
+    // V2: '-0.072',
+    // V3: '2.536',
+    // V4: '1.378',
+    // V10: '-0.090',
+    // V11: '-0.551',
+    // V12: '-0.617',
+    // V14: '-0.311'
   });
 
   const handleChange = (e) => {
@@ -46,12 +47,12 @@ export function PredictionForm({ onSubmit, isLoading }) {
       generate_reports: formData.generate_reports
     };
     // Parse V features to numeric floats
-    for (let i = 1; i <= 28; i++) {
-      const key = `V${i}`;
-      if (formData[key] !== undefined) {
-        payload[key] = parseFloat(formData[key]) || 0.0;
-      }
-    }
+    // for (let i = 1; i <= 28; i++) {
+    //   const key = `V${i}`;
+    //   if (formData[key] !== undefined) {
+    //     payload[key] = parseFloat(formData[key]) || 0.0;
+    //   }
+    // }
     onSubmit(payload);
   };
 
@@ -60,20 +61,13 @@ export function PredictionForm({ onSubmit, isLoading }) {
       amount: '9999.99',
       transaction_id: `TXN-SUSP-${Math.floor(1000 + Math.random() * 9000)}`,
       merchant_name: 'Unknown Crypto Exchange',
-      merchant_category: 'CRYPTO',
-      payment_method: 'CRYPTO',
-      country: 'RU',
+      merchant_category: 'ELECTRONICS',
+      payment_method: 'WIRE',
+      transaction_type: 'PURCHASE',
+      country: 'GERMANY',
       ip_address: '185.220.101.1',
       device_id: 'DEV-UNKNOWN-XYZ',
-      generate_reports: true,
-      V1: '-3.043',
-      V2: '-3.157',
-      V3: '1.088',
-      V4: '2.288',
-      V10: '-4.797',
-      V11: '4.021',
-      V12: '-4.286',
-      V14: '-7.042'
+      generate_reports: true
     });
   };
 
@@ -82,53 +76,51 @@ export function PredictionForm({ onSubmit, isLoading }) {
       amount: '1250.75',
       transaction_id: `TXN-202606-${Math.floor(1000 + Math.random() * 9000)}`,
       merchant_name: 'Amazon Prime',
-      merchant_category: 'E-COMMERCE',
+      merchant_category: 'RETAIL',
       payment_method: 'CREDIT_CARD',
       country: 'USA',
       ip_address: '203.0.113.42',
       device_id: 'DEV-A1B2C3D4',
       generate_reports: true,
-      V1: '-1.359',
-      V2: '-0.072',
-      V3: '2.536',
-      V4: '1.378',
-      V10: '-0.090',
-      V11: '-0.551',
-      V12: '-0.617',
-      V14: '-0.311'
+      // V1: '-1.359',
+      // V2: '-0.072',
+      // V3: '2.536',
+      // V4: '1.378',
+      // V10: '-0.090',
+      // V11: '-0.551',
+      // V12: '-0.617',
+      // V14: '-0.311'
     });
-
-    setShowAdvanced(false);
   };
 
   return (
     <Card title="Transaction Risk Assessment Form" subtitle="Submit metadata and neural vectors to trigger AI prediction pipeline">
       {/* Preset Action Bar */}
-      <div className="flex items-center justify-between p-3 mb-5 rounded-lg bg-slate-900/80 border border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 mb-5 rounded-lg bg-slate-900/80 border border-slate-800">
         <span className="text-xs text-slate-400 font-medium">Quick Test Scenarios:</span>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <button
             type="button"
             onClick={() => setFormData({
               amount: '42.50',
               transaction_id: `TXN-LEGIT-${Math.floor(1000 + Math.random() * 9000)}`,
               merchant_name: 'Starbucks Coffee',
-              merchant_category: 'FOOD_AND_BEVERAGE',
+              merchant_category: 'FOOD',
               payment_method: 'CREDIT_CARD',
+              transaction_type: 'PURCHASE',
               country: 'USA',
               ip_address: '192.168.1.1',
               device_id: 'DEV-KNOWN-001',
-              generate_reports: false,
-              V1: '1.191', V2: '0.266', V3: '0.166', V4: '0.448', V10: '0.09', V11: '-0.55', V12: '-0.61', V14: '0.20'
+              generate_reports: false
             })}
-            className="px-2.5 py-1 text-[11px] rounded bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 font-medium"
+            className="w-full sm:w-auto px-2.5 py-1 text-[11px] rounded bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 font-medium"
           >
             Load Low-Risk
           </button>
           <button
             type="button"
             onClick={fillSuspiciousPreset}
-            className="px-2.5 py-1 text-[11px] rounded bg-red-500/10 text-red-400 hover:bg-red-500/20 font-medium"
+            className="w-full sm:w-auto px-2.5 py-1 text-[11px] rounded bg-red-500/10 text-red-400 hover:bg-red-500/20 font-medium"
           >
             Load High-Risk
           </button>
@@ -170,11 +162,12 @@ export function PredictionForm({ onSubmit, isLoading }) {
               onChange={handleChange}
               className="fg-input"
             >
-              <option value="E-COMMERCE">E-Commerce</option>
               <option value="ELECTRONICS">Electronics</option>
-              <option value="CRYPTO">Crypto Exchanges</option>
-              <option value="GAMING">Gaming / Digital</option>
-              <option value="FOOD_AND_BEVERAGE">Food & Dining</option>
+              <option value="FOOD">Food</option>
+              <option value="GROCERY">Grocery</option>
+              <option value="HEALTH">Health</option>
+              <option value="RETAIL">Retail</option>
+              <option value="TRAVEL">Travel</option>
             </select>
           </div>
         </div>
@@ -190,9 +183,21 @@ export function PredictionForm({ onSubmit, isLoading }) {
             >
               <option value="CREDIT_CARD">Credit Card</option>
               <option value="DEBIT_CARD">Debit Card</option>
-              <option value="APPLE_PAY">Apple / Google Pay</option>
-              <option value="CRYPTO">Crypto</option>
-              <option value="ACH">ACH Transfer</option>
+              <option value="UPI">UPI</option>
+              <option value="WIRE">Wire Transfer</option>
+            </select>
+          </div>
+          <div>
+            <label className="fg-label">Transaction Type</label>
+            <select
+              name="transaction_type"
+              value={formData.transaction_type}
+              onChange={handleChange}
+              className="fg-input"
+            >
+              <option value="PURCHASE">Purchase</option>
+              <option value="TRANSFER">Transfer</option>
+              <option value="WITHDRAWAL">Withdrawal</option>
             </select>
           </div>
           <div>
@@ -204,10 +209,10 @@ export function PredictionForm({ onSubmit, isLoading }) {
               className="fg-input"
             >
               <option value="USA">USA</option>
-              <option value="IND">India</option>
+              <option value="INDIA">India</option>
               <option value="UK">United Kingdom</option>
               <option value="RU">Russia</option>
-              <option value="DE">Germany</option>
+              <option value="GERMANY">Germany</option>
               <option value="FR">France</option>
             </select>
           </div>
@@ -220,7 +225,7 @@ export function PredictionForm({ onSubmit, isLoading }) {
         </div>
 
         {/* AI Reports Checkbox Toggle */}
-        <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+        <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <Sparkles className="w-4 h-4 text-cyan-400" />
             <div>
@@ -238,7 +243,7 @@ export function PredictionForm({ onSubmit, isLoading }) {
         </div>
 
         {/* Collapsible V-Features Panel */}
-        <div className="border-t border-slate-800/80 pt-3">
+        {/* <div className="border-t border-slate-800/80 pt-3">
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
@@ -266,7 +271,7 @@ export function PredictionForm({ onSubmit, isLoading }) {
               ))}
             </div>
           )}
-        </div>
+        </div> */}
 
         <Button type="submit" variant="primary" isLoading={isLoading} className="w-full py-3 mt-4 text-sm font-bold">
           Run AI Fraud Assessment

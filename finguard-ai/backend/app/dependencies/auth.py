@@ -37,11 +37,34 @@ async def get_current_user(
 
     # print("=" * 70)
 
-    if user is None:
+    if user is None or user.get("is_deleted"):
         raise HTTPException(
             status_code=401,
             detail="User not found"
         )
+
+    # Validate token issued-at time against token_valid_after invalidation
+    iat = payload.get("iat")
+    if iat:
+        from datetime import datetime
+        token_issued_at = datetime.utcfromtimestamp(iat)
+        valid_after = user.get("token_valid_after")
+        if valid_after and token_issued_at < valid_after:
+            raise HTTPException(
+                status_code=401,
+                detail="Session invalidated. Please log in again."
+            )
+
+    # Validate session ID if present in token claims
+    sid = payload.get("sid")
+    if sid:
+        active_sessions = user.get("sessions", [])
+        session_exists = any(s.get("session_id") == sid for s in active_sessions)
+        if not session_exists:
+            raise HTTPException(
+                status_code=401,
+                detail="Session has been revoked or expired. Please log in again."
+            )
 
     return user
 

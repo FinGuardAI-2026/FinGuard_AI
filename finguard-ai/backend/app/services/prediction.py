@@ -27,7 +27,7 @@ import uuid
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -241,15 +241,21 @@ class PredictionService:
 
     def __init__(self, registry: _ModelRegistry) -> None:
         self._reg = registry
-        db=db_manager.get_db()
-        self._transaction_repo=TransactionRepository(db)
+
+    @property
+    def transaction_repo(self) -> Optional[TransactionRepository]:
+        try:
+            db = db_manager.get_db()
+            return TransactionRepository(db)
+        except RuntimeError:
+            return None
 
     # ── Public Entry Point ────────────────────────────────────────────────
 
     async def predict(
         self,
         request: PredictionRequest,
-        user_id: str,
+        user_id: str = "",
     ) -> PredictionResponse:        
         """
         Executes the end-to-end fraud detection pipeline.
@@ -269,10 +275,10 @@ class PredictionService:
         processed_df = self._preprocess(feature_df)
 
         # 3. ML Inference
-        fraud_probability, confidence_score, prediction_label = self._infer(processed_df)
+        fraud_probability, confidence_score, prediction_label, xgb_latency = self._infer(processed_df)
 
         # 4. SHAP Explanation
-        shap_output, shap_vector = self._explain(processed_df, feature_df)
+        shap_output, shap_vector, shap_latency = self._explain(processed_df, feature_df)
 
         # 5. Risk Assessment
         transaction_meta = self._build_transaction_meta(request)
@@ -287,8 +293,9 @@ class PredictionService:
 
         # 7. Optional Gemini Reports
         gemini_reports: Optional[Dict[str, str]] = None
+        gemini_latency=0
         if request.generate_reports:
-            gemini_reports = await self._generate_reports(
+            gemini_reports, gemini_latency = await self._generate_reports(
                 request=request,
                 prediction=prediction_label,
                 fraud_probability=fraud_probability,
@@ -305,53 +312,91 @@ class PredictionService:
             request.transaction_id or f"TXN-{uuid.uuid4().hex[:12].upper()}"
         )
 
-        try:
-            # print(">>> Saving prediction to MongoDB...")
-            await self._transaction_repo.insert_one({
-                "transaction_id": transaction_id,
+        repo = self.transaction_repo
+        if repo is not None:
+            try:
+                # print(">>> Saving prediction to MongoDB...")
+                await repo.insert_one({
+                    "transaction_id": transaction_id,
 
-                "user_id": user_id,
+                    "user_id": user_id,
 
-                "amount": request.amount,
-                "currency": "USD",
+                    "amount": request.amount,
+                    "currency": "USD",
 
-                "merchant_name": request.merchant_name,
-                "merchant_category": request.merchant_category,
+                    "merchant_name": request.merchant_name,
+                    "merchant_category": request.merchant_category,
 
-                "payment_method": request.payment_method,
-                "transaction_type": request.transaction_type or "PURCHASE",
+                    "payment_method": request.payment_method,
+                    "transaction_type": request.transaction_type or "PURCHASE",
 
-                "status": "COMPLETED",
+                    "status": "COMPLETED",
 
-                "country": request.country,
-                "city": request.city,
+                    "country": request.country,
+                    "city": request.city,
 
-                "ip_address": request.ip_address,
-                "device_id": request.device_id,
-                "browser": request.browser,
-                "operating_system": request.operating_system,
+                    "ip_address": request.ip_address,
+                    "device_id": request.device_id,
+                    "browser": request.browser,
+                    "operating_system": request.operating_system,
 
-                "transaction_time": request.transaction_time or datetime.utcnow(),
+                    "transaction_time": request.transaction_time or datetime.utcnow(),
 
-                "prediction": prediction_label,
-                "fraud_probability": fraud_probability,
-                "confidence_score": confidence_score,
+                    "prediction": prediction_label,
+                    "fraud_probability": fraud_probability,
+                    "confidence_score": confidence_score,
+                    "xgboost_latency_ms": xgb_latency,
+                    "shap_latency_ms": shap_latency,
+                    "gemini_latency_ms": gemini_latency,
 
-                "risk_score": risk_output.risk_score,
-                "risk_level": risk_output.risk_level,
+                    "risk_score": risk_output.risk_score,
+                    "risk_level": risk_output.risk_level,
 
-                "shap_summary": shap_output.model_dump(),
+                    "shap_summary": shap_output.model_dump(),
 
-                "llm_report": gemini_reports,
+                    "llm_report": gemini_reports,
 
-                "investigation_status": "PENDING_REVIEW",
+                    "investigation_status": "PENDING_REVIEW",
 
-                "created_at": datetime.utcnow(),
-                "updated_at": datetime.utcnow(),
-            })
-            # print(">>> Prediction saved successfully.")
-        except Exception as e:
-            logger.error(f"Failed to save prediction: {e}")
+                    "created_at": datetime.utcnow(),
+                    "updated_at": datetime.utcnow(),
+                })
+                # print(">>> Prediction saved successfully.")
+                if user_id:
+                    try:
+                        db = db_manager.get_db()
+                        from app.repositories.notification import NotificationRepository, NotificationPreferencesRepository
+                        from app.services.notification import NotificationService
+                        import asyncio
+                        
+                        notif_repo = NotificationRepository(db)
+                        prefs_repo = NotificationPreferencesRepository(db)
+                        notif_svc = NotificationService(notif_repo, prefs_repo)
+                        
+                        # Trigger fraud alert
+                        asyncio.create_task(
+                            notif_svc.notify_fraud_prediction(
+                                user_id=user_id,
+                                transaction_id=transaction_id,
+                                fraud_probability=fraud_probability,
+                                risk_level=risk_output.risk_level,
+                                amount=request.amount,
+                            )
+                        )
+                        
+                        # Trigger report generated alert if requested
+                        if request.generate_reports and gemini_reports:
+                            asyncio.create_task(
+                                notif_svc.notify_report_generated(
+                                    user_id=user_id,
+                                    transaction_id=transaction_id,
+                                    report_type="fraud_investigation",
+                                )
+                            )
+                    except Exception as ne:
+                        logger.error(f"Failed to trigger notifications: {ne}")
+            except Exception as e:
+                logger.error(f"Failed to save prediction: {e}")
 
         return PredictionResponse(
             transaction_id=transaction_id,
@@ -364,11 +409,15 @@ class PredictionService:
             top_features=top_features,
             model_version=self._reg.model_version,
             processing_time_ms=processing_ms,
+            xgboost_latency_ms=xgb_latency,
+            shap_latency_ms=shap_latency,
             timestamp=datetime.utcnow(),
         )
 
     # ── Stage 1: Feature Frame Construction ───────────────────────────────
 
+    # TODO: Legacy Kaggle Credit Card compatibility.
+    # Remove after legacy Time/V1-V28 schema support is retired.
     def _build_feature_df(self, request: PredictionRequest) -> pd.DataFrame:
         """
         Builds the raw feature DataFrame from the request.
@@ -377,33 +426,29 @@ class PredictionService:
         """
         import time as _time
 
-        # row: Dict[str, float] = {
-        #     "Time": request.time if request.time is not None else _time.time(),
-        #     "Amount": request.amount,
-        # }
-        # for i in range(1, 29):
-        #     row[f"V{i}"] = getattr(request, f"V{i}", 0.0)
-
-        # Build using the preprocessor's known feature order if available
-        # cols = self._reg.feature_names if self._reg.feature_names else _FEATURE_COLUMNS
-        # Only keep columns the model was trained on
-        # filtered_row = {c: row.get(c, 0.0) for c in cols}
-        # return pd.DataFrame([filtered_row])
-
         row = {
+            "Time": request.time if request.time is not None else _time.time(),
+            "Amount": request.amount,
             "amount": request.amount,
             "merchant_category": request.merchant_category or "UNKNOWN",
             "payment_method": request.payment_method or "UNKNOWN",
             "transaction_type": request.transaction_type or "UNKNOWN",
             "country": request.country or "UNKNOWN",
         }
+        for i in range(1, 29):
+            row[f"V{i}"] = getattr(request, f"V{i}", 0.0)
 
         cols = self._reg.feature_names
-
         filtered_row = {}
-
         for col in cols:
-            filtered_row[col] = row.get(col)
+            if col == "Amount" or col == "amount":
+                filtered_row[col] = request.amount
+            elif col == "Time" or col == "time":
+                filtered_row[col] = request.time if request.time is not None else _time.time()
+            elif col.startswith("V") and len(col) > 1 and col[1:].isdigit():
+                filtered_row[col] = getattr(request, col, 0.0)
+            else:
+                filtered_row[col] = row.get(col, 0.0)
 
         return pd.DataFrame([filtered_row])
 
@@ -421,7 +466,7 @@ class PredictionService:
 
     # ── Stage 3: ML Inference ─────────────────────────────────────────────
 
-    def _infer(self, processed_df: pd.DataFrame) -> Tuple[float, float, str]:
+    def _infer(self, processed_df: pd.DataFrame) -> Tuple[float, float, str, float]:
         """
         Runs the model and returns (fraud_prob, confidence, label).
 
@@ -431,6 +476,7 @@ class PredictionService:
         """
         model = self._reg.model
         X = processed_df.values
+        start=time.perf_counter()
 
         if hasattr(model, "predict_proba"):
             proba = model.predict_proba(X)[0]          # [prob_legit, prob_fraud]
@@ -445,7 +491,8 @@ class PredictionService:
             confidence = fraud_prob if predicted_class == 1 else 1.0 - fraud_prob
 
         label = "FRAUD" if predicted_class == 1 else "GENUINE"
-        return fraud_prob, confidence, label
+        latency_ms=round((time.perf_counter()-start)*1000,2)
+        return fraud_prob, confidence, label, latency_ms
 
     # ── Stage 4: SHAP Explanation ─────────────────────────────────────────
 
@@ -453,7 +500,7 @@ class PredictionService:
         self,
         processed_df: pd.DataFrame,
         raw_df: pd.DataFrame,
-    ) -> Tuple[SHAPExplanation, Optional[np.ndarray]]:
+    ) -> Tuple[SHAPExplanation, Optional[np.ndarray], float]:
         """
         Computes SHAP values and returns a structured SHAPExplanation.
 
@@ -465,6 +512,7 @@ class PredictionService:
             return self._empty_shap_explanation(), None
 
         try:
+            start = time.perf_counter()
             shap_matrix = explainer.calculate_shap_values(processed_df)
             shap_vector = shap_matrix[0]                # single sample
 
@@ -486,11 +534,15 @@ class PredictionService:
                 narrative_risk_drivers=analyst.get("risk_drivers", []),
                 narrative_mitigating_factors=analyst.get("mitigating_factors", []),
             )
-            return explanation, shap_vector
+            shap_latency = round(
+                (time.perf_counter() - start) * 1000,
+                2
+            )
+            return explanation, shap_vector, shap_latency
 
         except Exception as e:
             logger.warning(f"SHAP explanation failed: {e}")
-            return self._empty_shap_explanation(), None
+            return self._empty_shap_explanation(), None, 0
 
     def _empty_shap_explanation(self) -> SHAPExplanation:
         return SHAPExplanation(
@@ -582,15 +634,56 @@ class PredictionService:
             reverse=True,
         )[:n]
 
-        return [
-            {
+        name_map = {
+            "amount": "Transaction Amount",
+            "merchant_category": "Merchant Category",
+            "payment_method": "Payment Method",
+            "transaction_type": "Transaction Type",
+            "country": "Country",
+        }
+
+        def map_feature(feature_name: str, processed_val: float) -> Tuple[str, Union[float, str]]:
+            for prefix in ["merchant_category_", "payment_method_", "transaction_type_", "country_"]:
+                if feature_name.startswith(prefix):
+                    raw_feat = prefix[:-1]
+                    category = feature_name[len(prefix):]
+                    readable_name = name_map.get(raw_feat, raw_feat.replace("_", " ").title())
+                    if processed_val == 1.0:
+                        return readable_name, category
+                    return readable_name, None
+            readable_name = name_map.get(feature_name, feature_name.replace("_", " ").title())
+            return readable_name, processed_val
+
+        results = []
+        for rank, (idx, _) in enumerate(indexed):
+            f_name = feature_names[idx]
+            f_val_raw = processed_df.iloc[0, idx]
+            
+            if isinstance(f_val_raw, (int, float)):
+                f_val = float(f_val_raw)
+            elif f_val_raw is None:
+                f_val = 0.0
+            else:
+                f_val = f_val_raw
+
+                # Skip inactive one-hot encoded features
+            if (
+                f_name.startswith(("merchant_category_", "payment_method_", "transaction_type_", "country_"))
+                and f_val != 1.0
+            ):
+                continue
+
+
+            readable_name, readable_val = map_feature(f_name, f_val)
+            
+            results.append({
                 "rank": rank + 1,
-                "feature": feature_names[idx],
+                "feature": readable_name,
                 "shap_value": round(float(shap_vector[idx]), 6),
-                "feature_value": round(float(processed_df.iloc[0, idx]), 6),
-            }
-            for rank, (idx, _) in enumerate(indexed)
-        ]
+                "feature_value": round(readable_val, 6) if isinstance(readable_val, (int, float)) else readable_val,
+            })
+
+        return results
 
     # ── Stage 7: Gemini Reports ───────────────────────────────────────────
 
@@ -646,13 +739,21 @@ class PredictionService:
             )
 
             generator = FraudReportGenerator(output_dir=reports_output_dir)
+            start = time.perf_counter()
             results = generator.generate_all(context)
+            gemini_latency = round(
+                (time.perf_counter() - start) * 1000,
+                2
+            )
 
-            return {r.report_type: r.report_text for r in results}
-
+            return (
+                {r.report_type: r.report_text for r in results},
+                gemini_latency
+            )
+        
         except Exception as e:
             logger.error(f"Gemini report generation failed: {e}", exc_info=True)
-            return None
+            return None,0
 
     # ── Helpers ───────────────────────────────────────────────────────────
 

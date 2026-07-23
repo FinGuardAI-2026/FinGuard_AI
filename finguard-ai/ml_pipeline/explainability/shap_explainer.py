@@ -6,7 +6,7 @@ Generates global summary plots, local waterfalls, force diagrams, dependence plo
 decision curves, and translates raw values into analyst-friendly text narratives.
 """
 from pathlib import Path
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -269,43 +269,122 @@ class FinGuardSHAPExplainer:
 
     # ── Narrative Generator ───────────────────────────────────────────────
 
-    def generate_analyst_narrative(self, shap_vector: np.ndarray, sample_row: pd.Series) -> Dict[str, Any]:
+    def generate_analyst_narrative(
+        self,
+        shap_vector: np.ndarray,
+        sample_row: pd.Series,
+        threshold: Optional[float] = None
+    ) -> Dict[str, Any]:
         """
         Translates numeric Shapley values into a natural language risk driver analysis.
         """
+        # Calculate dynamic threshold if not provided
+        abs_vals = np.abs(shap_vector)
+        max_abs = abs_vals.max() if len(abs_vals) > 0 else 0.0
+        if threshold is None:
+            if max_abs > 0:
+                # 15% of the maximum absolute impact, minimum 0.001
+                threshold = max(0.001, float(0.15 * max_abs))
+            else:
+                threshold = 0.005
+
+        total_abs_impact = float(abs_vals.sum())
+
         positive_drivers = []
         negative_drivers = []
 
+        def is_one_hot_feature(feature_name: str) -> bool:
+            return feature_name.startswith((
+                "merchant_category_",
+                "payment_method_",
+                "transaction_type_",
+                "country_",
+            ))
+
+        # Human readable feature name and value mapper
+        def map_feature(feature_name: str, processed_val: float) -> Tuple[str, Union[float, str]]:
+            name_map = {
+                "amount": "Transaction Amount",
+                "merchant_category": "Merchant Category",
+                "payment_method": "Payment Method",
+                "transaction_type": "Transaction Type",
+                "country": "Country",
+            }
+            # Check for one-hot encoded category features
+            for prefix in ["merchant_category_", "payment_method_", "transaction_type_", "country_"]:
+                if feature_name.startswith(prefix):
+                    raw_feat = prefix[:-1]
+                    category = feature_name[len(prefix):]
+                    readable_name = name_map.get(raw_feat, raw_feat.replace("_", " ").title())
+                    if processed_val == 1.0:
+                        return readable_name, category
+                    return readable_name, None
+            
+            readable_name = name_map.get(feature_name, feature_name.replace("_", " ").title())
+            return readable_name, processed_val
+        
+        # print("\n========== SAMPLE ROW ==========")
+        # print(sample_row)
+
+        # print("\n========== FEATURE NAMES ==========")
+        # print(self.feature_names)
+
+
         for idx, val in enumerate(shap_vector):
+            # Safe index boundary check
+            if idx >= len(self.feature_names):
+                continue
+
             f_name = self.feature_names[idx]
-            f_val = sample_row.iloc[idx]
+            # Safe boundary check for sample_row
+            f_val = sample_row.iloc[idx] if idx < len(sample_row) else 0.0
+
+            # Map to human-readable feature name and value
+            readable_name, readable_val = map_feature(f_name, f_val)
+            # Skip inactive one-hot encoded categories
+            if is_one_hot_feature(f_name) and f_val != 1.0:
+                continue
+
+            # Calculate normalized contribution percentage
+            percentage = round((abs(val) / total_abs_impact) * 100, 2) if total_abs_impact > 0 else 0.0
 
             driver_info = {
-                "feature": f_name,
-                "value": float(f_val),
+                "feature": readable_name,
+                "value": readable_val,
                 "impact": float(val),
+                "percentage": percentage
             }
 
-            if val > 0.005:  # threshold of interest
+            if val > threshold:
                 positive_drivers.append(driver_info)
-            elif val < -0.005:
+            elif val < -threshold:
                 negative_drivers.append(driver_info)
 
         # Sort by impact strength descending
         positive_drivers.sort(key=lambda x: x["impact"], reverse=True)
         negative_drivers.sort(key=lambda x: abs(x["impact"]), reverse=True)
 
+        # Helper to format values for text narrative
+        def format_value_str(feature: str, val: Any) -> str:
+            if feature == "Transaction Amount" and isinstance(val, (int, float)):
+                return f"${val:.2f}"
+            if isinstance(val, float):
+                return f"{val:.2f}"
+            return str(val)
+
         # Build natural explanations
         pos_sentences = []
-        for d in positive_drivers[:3]:
+        for d in positive_drivers[:5]:
+            val_str = format_value_str(d["feature"], d["value"])
             pos_sentences.append(
-                f"Feature `{d['feature']}` (value: {d['value']:.2f}) increased the fraud likelihood by `+{d['impact']*100:.2f}%`."
+                f"Feature `{d['feature']}` (value: {val_str}) increased the fraud likelihood by `+{d['impact']*100:.2f}%` (attribution: {d['percentage']}%)."
             )
 
         neg_sentences = []
-        for d in negative_drivers[:3]:
+        for d in negative_drivers[:5]:
+            val_str = format_value_str(d["feature"], d["value"])
             neg_sentences.append(
-                f"Feature `{d['feature']}` (value: {d['value']:.2f}) lowered the fraud likelihood by `-{abs(d['impact'])*100:.2f}%`."
+                f"Feature `{d['feature']}` (value: {val_str}) lowered the fraud likelihood by `-{abs(d['impact'])*100:.2f}%` (attribution: {d['percentage']}%)."
             )
 
         return {

@@ -14,12 +14,12 @@ export function PredictionResult({ result }) {
       {/* Primary Status Header Card */}
       <Card className={`border-2 ${isFraud ? 'border-red-500/40 bg-red-950/20 glow-red' : 'border-emerald-500/40 bg-emerald-950/20 glow-green'}`}>
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className={`p-3.5 rounded-2xl ${isFraud ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
               {isFraud ? <ShieldAlert size={36} /> : <ShieldCheck size={36} />}
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-xl font-bold text-slate-100">{result.prediction} PREDICTION</h2>
                 <Badge variant={isFraud ? 'danger' : 'success'}>
                   {result.confidence_score}% Confidence
@@ -31,7 +31,7 @@ export function PredictionResult({ result }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs text-slate-400 border-t md:border-t-0 md:border-l border-slate-800 pt-3 md:pt-0 md:pl-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 text-xs text-slate-400 border-t md:border-t-0 md:border-l border-slate-800 pt-3 md:pt-0 md:pl-6 w-full md:w-auto">
             <div className="flex items-center gap-1.5">
               <Cpu size={14} className="text-cyan-400" />
               <span>{result.model_version}</span>
@@ -48,8 +48,8 @@ export function PredictionResult({ result }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card title="Calibrated Risk Score" subtitle="Composite score fusing ML, SHAP & Business Rules">
           <RiskGauge score={result.risk_assessment.risk_score} level={result.risk_assessment.risk_level} />
-          
-          <div className="mt-4 pt-4 border-t border-slate-800 grid grid-cols-3 gap-2 text-center text-xs">
+
+          <div className="mt-4 pt-4 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-xs">
             <div className="p-2 rounded bg-slate-900/60 border border-slate-800">
               <span className="text-slate-500 block text-[10px]">ML Prob</span>
               <span className="font-mono font-bold text-slate-200">{result.fraud_probability}%</span>
@@ -66,9 +66,8 @@ export function PredictionResult({ result }) {
         </Card>
 
         <Card title="Action Recommendation" subtitle="Automated protocol decision derived from policy">
-          <div className={`p-4 rounded-xl border mb-4 ${
-            isFraud ? 'bg-red-500/10 border-red-500/30 text-red-200' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200'
-          }`}>
+          <div className={`p-4 rounded-xl border mb-4 ${isFraud ? 'bg-red-500/10 border-red-500/30 text-red-200' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200'
+            }`}>
             <div className="flex items-start gap-2.5">
               {isFraud ? <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" /> : <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />}
               <p className="text-xs font-medium leading-relaxed">
@@ -134,7 +133,7 @@ export function PredictionResult({ result }) {
           <div className="mt-4 pt-4 border-t border-slate-800">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 block">Top Feature Attributions Matrix</span>
             <div className="overflow-x-auto">
-              <table className="fg-table">
+              <table className="fg-table min-w-[520px]">
                 <thead>
                   <tr>
                     <th>Rank</th>

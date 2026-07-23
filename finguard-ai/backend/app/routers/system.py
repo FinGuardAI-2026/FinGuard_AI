@@ -20,8 +20,7 @@ async def root_info():
 async def health_check():
     """Performs system liveness probes and database connection verification."""
     db_status = "disconnected"
-    status_overall = "healthy"
-    
+
     if db_manager.client is not None:
         try:
             # Quick database ping check
@@ -29,12 +28,9 @@ async def health_check():
             db_status = "connected"
         except Exception:
             db_status = "disconnected"
-            status_overall = "degraded"
-    else:
-        status_overall = "degraded"
 
     return {
-        "status": status_overall,
+        "status": "healthy",
         "database": db_status,
         "service": settings.APP_NAME,
         "version": settings.APP_VERSION

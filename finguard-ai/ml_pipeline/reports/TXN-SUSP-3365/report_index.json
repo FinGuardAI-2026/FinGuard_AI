@@ -1,0 +1,76 @@
+[
+  {
+    "transaction_id": "TXN-SUSP-3365",
+    "risk_level": "High",
+    "risk_score": 65.16,
+    "fraud_probability": 91.67,
+    "prediction": "FRAUD",
+    "reports": [
+      {
+        "type": "fraud_investigation",
+        "file": "fraud_investigation_report.md",
+        "generated_at": "2026-07-20T19:15:56.870498+00:00",
+        "char_count": 6069,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "analyst_summary",
+        "file": "analyst_summary.md",
+        "generated_at": "2026-07-20T19:16:02.784540+00:00",
+        "char_count": 1202,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "executive_summary",
+        "file": "executive_summary.md",
+        "generated_at": "2026-07-20T19:16:07.952507+00:00",
+        "char_count": 1846,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "customer_notification",
+        "file": "customer_notification.md",
+        "generated_at": "2026-07-20T19:16:13.358015+00:00",
+        "char_count": 1229,
+        "model": "gemini-2.5-flash"
+      }
+    ]
+  },
+  {
+    "transaction_id": "TXN-SUSP-3365",
+    "risk_level": "Low",
+    "risk_score": 3.91,
+    "fraud_probability": 0.0,
+    "prediction": "GENUINE",
+    "reports": [
+      {
+        "type": "fraud_investigation",
+        "file": "fraud_investigation_report.md",
+        "generated_at": "2026-07-20T19:21:34.219558+00:00",
+        "char_count": 5816,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "analyst_summary",
+        "file": "analyst_summary.md",
+        "generated_at": "2026-07-20T19:21:42.178937+00:00",
+        "char_count": 1546,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "executive_summary",
+        "file": "executive_summary.md",
+        "generated_at": "2026-07-20T19:21:50.069421+00:00",
+        "char_count": 1739,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "customer_notification",
+        "file": "customer_notification.md",
+        "generated_at": "2026-07-20T19:21:57.939813+00:00",
+        "char_count": 1251,
+        "model": "gemini-2.5-flash"
+      }
+    ]
+  }
+]

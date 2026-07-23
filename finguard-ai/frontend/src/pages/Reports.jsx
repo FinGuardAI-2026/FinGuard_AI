@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import { FileText, Download, Share2 } from 'lucide-react';
 import { useEffect } from "react";
 import { reportsService } from "../services/reports";
+import { formatDateTime } from "../utils/dateFormatter";
 
 function extractSection(text, title) {
   if (!text) return "";
@@ -121,7 +122,7 @@ export function Reports() {
             </h3>
             <div className="mt-3 text-slate-300">
               {report?.generated_at
-                ? new Date(report.generated_at).toLocaleString()
+                ? formatDateTime(report.generated_at)
                 : "-"}
             </div>
           </Card>

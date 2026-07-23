@@ -65,15 +65,15 @@ export function Badge({ children, variant = 'info', className }) {
 export function Card({ children, className, glass = true, title, subtitle, action }) {
   return (
     <div className={clsx(
-      'rounded-xl p-5 border transition-all duration-200',
+      'rounded-xl p-4 border transition-all duration-200',
       glass ? 'glass shadow-card' : 'bg-slate-900 border-slate-800',
       className
     )}>
       {(title || action) && (
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800/80">
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800/80">
           <div>
-            {title && <h3 className="text-base font-semibold text-slate-100">{title}</h3>}
-            {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+            {title && <h3 className="text-[15px] font-semibold text-slate-100">{title}</h3>}
+            {subtitle && <p className="text-[11px] text-slate-500 mt-0.5">{subtitle}</p>}
           </div>
           {action && <div>{action}</div>}
         </div>

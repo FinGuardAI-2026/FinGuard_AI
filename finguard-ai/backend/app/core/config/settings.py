@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     APP_NAME: str = Field(default="FinGuard AI", validation_alias="APP_NAME")
     APP_VERSION: str = Field(default="1.0.0", validation_alias="APP_VERSION")
     ENVIRONMENT: str = Field(default="development", validation_alias="ENVIRONMENT")
-    DEBUG: bool = Field(default=True, validation_alias="DEBUG")
+    DEBUG: bool = Field(default=False, validation_alias="DEBUG")
     
     # Networking
     HOST: str = Field(default="0.0.0.0", validation_alias="HOST")

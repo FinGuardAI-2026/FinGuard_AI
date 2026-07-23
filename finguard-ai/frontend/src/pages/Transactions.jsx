@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { Card, Badge, Button, Input, Modal } from '../components/ui';
 import { transactionService } from '../services/transactions';
@@ -21,7 +21,7 @@ export function Transactions() {
     page_size: 15
   });
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     setLoading(true);
     try {
       const res = await transactionService.listTransactions(filters);
@@ -31,11 +31,11 @@ export function Transactions() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
     fetchTransactions();
-  }, [filters.page, filters.status, filters.country]);
+  }, [fetchTransactions]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -50,12 +50,12 @@ export function Transactions() {
           <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Financial Transactions Journal</h1>
           <p className="text-xs text-slate-400 mt-1">Audit log of all processed settlement events and automated risk classifications.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Button variant="secondary" size="sm" onClick={fetchTransactions} isLoading={loading}>
-            <RefreshCw size={14} className="mr-1" /> Refresh
+            <RefreshCw size={14} className="w-full sm:w-auto" /> Refresh
           </Button>
           <Button variant="outline" size="sm">
-            <Download size={14} className="mr-1" /> Export CSV
+            <Download size={14} className="w-full sm:w-auto" /> Export CSV
           </Button>
         </div>
       </div>
@@ -98,7 +98,12 @@ export function Transactions() {
               <option value="DEU">Germany</option>
             </select>
           </div>
-          <Button type="submit" variant="primary" size="md">
+          <Button
+            type="submit"
+            variant="primary"
+            size="md"
+            className="w-full"
+          >
             <Filter size={14} className="mr-1.5" /> Apply Filters
           </Button>
         </form>
@@ -198,7 +203,7 @@ export function Transactions() {
 
         {/* Pagination Bar */}
         {data && (
-          <div className="p-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+          <div className="p-4 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-slate-400">
             <span>Showing page {data.page} of {data.total_pages} ({data.total_records} records)</span>
             <div className="flex gap-2">
               <Button
@@ -234,24 +239,28 @@ export function Transactions() {
       >
         {selectedTx && (
           <div className="space-y-4 text-xs">
-            <div className="grid grid-cols-2 gap-4 p-3 rounded-lg bg-slate-900 border border-slate-800 font-mono">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 rounded-lg bg-slate-900 border border-slate-800 font-mono">
               <div>
                 <span className="text-slate-500 block text-[10px]">TRANSACTION ID</span>
-                <span className="text-cyan-400 font-bold">{selectedTx.transaction_id}</span>
+                <span className="text-cyan-400 font-bold break-all">
+                  {selectedTx.transaction_id}
+                </span>
               </div>
               <div>
                 <span className="text-slate-500 block text-[10px]">AMOUNT</span>
-                <span className="text-slate-100 font-bold">${selectedTx.amount?.toFixed(2)} {selectedTx.currency}</span>
+                <span className="text-slate-100 font-bold break-words">${selectedTx.amount?.toFixed(2)} {selectedTx.currency}</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-slate-300">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-slate-300 break-words">
               <div><strong>Merchant:</strong> {selectedTx.merchant_name} ({selectedTx.merchant_category})</div>
               <div><strong>Payment Method:</strong> {selectedTx.payment_method}</div>
               <div><strong>Origin IP:</strong> {selectedTx.ip_address}</div>
               <div><strong>Device ID:</strong> {selectedTx.device_id}</div>
               <div><strong>Geographic Country:</strong> {selectedTx.country}</div>
-              <div><strong>Timestamp:</strong> {selectedTx.transaction_time}</div>
+              <div className="break-all">
+                <strong>Timestamp:</strong> {selectedTx.transaction_time}
+              </div>
             </div>
 
             {/* AI Investigation Report */}
@@ -278,10 +287,11 @@ export function Transactions() {
 
             </div>
 
-            <div className="pt-3 border-t border-slate-800 flex justify-end">
+            <div className="pt-3 border-t border-slate-800 flex">
               <Button
                 variant="secondary"
                 size="sm"
+                className="w-full sm:w-auto"
                 onClick={() => {
                   setSelectedTx(null);
                   setInvestigationReport(null);

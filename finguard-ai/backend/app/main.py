@@ -10,6 +10,9 @@ from app.routers.prediction import router as prediction_router
 from app.db.connection import db_manager
 from app.routers.analytics import router as analytics_router
 from app.routers.reports import router as reports_router
+from app.routers.notifications import router as notifications_router
+from app.routers.search import router as search_router
+from app.routers.admin import router as admin_router
 
 def create_app() -> FastAPI:
     """FastAPI Application Factory constructing configurations, routing, and middlewares."""
@@ -46,6 +49,9 @@ def create_app() -> FastAPI:
     app.include_router(prediction_router)
     app.include_router(analytics_router)
     app.include_router(reports_router)
+    app.include_router(notifications_router)
+    app.include_router(search_router)
+    app.include_router(admin_router)
     
     @app.on_event("startup")
     async def startup_event():

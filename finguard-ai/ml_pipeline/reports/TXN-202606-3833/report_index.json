@@ -1,0 +1,39 @@
+[
+  {
+    "transaction_id": "TXN-202606-3833",
+    "risk_level": "High",
+    "risk_score": 62.48,
+    "fraud_probability": 91.67,
+    "prediction": "FRAUD",
+    "reports": [
+      {
+        "type": "fraud_investigation",
+        "file": "fraud_investigation_report.md",
+        "generated_at": "2026-07-09T06:50:48.651445+00:00",
+        "char_count": 4320,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "analyst_summary",
+        "file": "analyst_summary.md",
+        "generated_at": "2026-07-09T06:50:54.666706+00:00",
+        "char_count": 1119,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "executive_summary",
+        "file": "executive_summary.md",
+        "generated_at": "2026-07-09T06:51:01.531545+00:00",
+        "char_count": 1733,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "customer_notification",
+        "file": "customer_notification.md",
+        "generated_at": "2026-07-09T06:51:13.034164+00:00",
+        "char_count": 1273,
+        "model": "gemini-2.5-flash"
+      }
+    ]
+  }
+]

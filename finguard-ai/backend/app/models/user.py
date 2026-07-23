@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict, List, Any
 from pydantic import BaseModel, EmailStr, Field
 
 class UserDB(BaseModel):
@@ -13,6 +13,16 @@ class UserDB(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     last_login: Optional[datetime] = None
+    avatar_color: Optional[str] = None
+    avatar_url: Optional[str] = None
+    preferences: Dict[str, Any] = Field(default_factory=lambda: {
+        "email_notifications": True,
+        "system_alerts": True,
+        "theme": "dark",
+        "language": "en"
+    })
+    sessions: List[Dict[str, Any]] = Field(default_factory=list)
+    login_history: List[Dict[str, Any]] = Field(default_factory=list)
 
     class Config:
         populate_by_name = True

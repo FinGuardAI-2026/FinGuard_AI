@@ -26,7 +26,7 @@ export function Prediction() {
   return (
     <DashboardLayout>
       <div className="pb-2 border-b border-slate-800">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Sparkles className="w-6 h-6 text-cyan-400" />
           <h1 className="text-2xl font-bold text-slate-100 tracking-tight">AI Prediction Engine</h1>
         </div>
@@ -71,12 +71,11 @@ export function Prediction() {
               <div
                 key={i}
                 onClick={() => setPredictionResult(h)}
-                className={`p-3 rounded-lg bg-slate-900/60 border hover:bg-slate-800/50 cursor-pointer transition-colors flex items-center justify-between ${
-                  h.prediction === 'FRAUD' ? 'border-red-500/30' : 'border-emerald-500/30'
-                }`}
+                className={`p-3 rounded-lg bg-slate-900/60 border hover:bg-slate-800/50 cursor-pointer transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 ${h.prediction === 'FRAUD' ? 'border-red-500/30' : 'border-emerald-500/30'
+                  }`}
               >
                 <div>
-                  <span className="text-xs font-bold text-slate-200 font-mono block">{h.transaction_id}</span>
+                  <span className="text-xs font-bold text-slate-200 font-mono block break-all">{h.transaction_id}</span>
                   <span className="text-[11px] text-slate-500">{h.model_version}</span>
                 </div>
                 <span className={`text-xs font-bold ${h.prediction === 'FRAUD' ? 'text-red-400' : 'text-emerald-400'}`}>

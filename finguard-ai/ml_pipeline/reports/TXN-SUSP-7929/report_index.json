@@ -1,0 +1,39 @@
+[
+  {
+    "transaction_id": "TXN-SUSP-7929",
+    "risk_level": "Low",
+    "risk_score": 2.78,
+    "fraud_probability": 0.0,
+    "prediction": "GENUINE",
+    "reports": [
+      {
+        "type": "fraud_investigation",
+        "file": "fraud_investigation_report.md",
+        "generated_at": "2026-07-21T17:40:31.827276+00:00",
+        "char_count": 1681,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "analyst_summary",
+        "file": "analyst_summary.md",
+        "generated_at": "2026-07-21T17:40:38.724950+00:00",
+        "char_count": 819,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "executive_summary",
+        "file": "executive_summary.md",
+        "generated_at": "2026-07-21T17:40:45.330790+00:00",
+        "char_count": 1820,
+        "model": "gemini-2.5-flash"
+      },
+      {
+        "type": "customer_notification",
+        "file": "customer_notification.md",
+        "generated_at": "2026-07-21T17:40:54.632216+00:00",
+        "char_count": 1237,
+        "model": "gemini-2.5-flash"
+      }
+    ]
+  }
+]

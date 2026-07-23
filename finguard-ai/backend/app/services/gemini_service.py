@@ -1,4 +1,5 @@
 import google.generativeai as genai
+import time
 
 from app.core.config import settings
 
@@ -18,6 +19,17 @@ async def test_gemini():
 
 async def generate_executive_report(prompt: str):
 
+    # print("========== GEMINI FUNCTION CALLED ==========")
+
+    start = time.perf_counter()
+
     response = model.generate_content(prompt)
+
+    gemini_latency = round(
+        (time.perf_counter() - start) * 1000,
+        2
+    )
+
+    # print("Gemini Latency:", gemini_latency)
 
     return response.text

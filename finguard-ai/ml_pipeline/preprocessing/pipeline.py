@@ -11,7 +11,6 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler
-
 from ml_pipeline.preprocessing.outliers import IQROutlierCapper, Winsorizer
 from ml_pipeline.utils.logger import get_logger
 from sklearn.preprocessing import OneHotEncoder
@@ -177,6 +176,8 @@ class FraudPreprocessor(BaseEstimator, TransformerMixin):
 
         # 4. Encode categorical columns
         if self.categorical_cols_:
+            # print("\n========== RAW CATEGORICAL INPUT ==========")
+            # print(X_final[self.categorical_cols_])
             encoded = self.encoder.transform(
                 X_final[self.categorical_cols_]
             )

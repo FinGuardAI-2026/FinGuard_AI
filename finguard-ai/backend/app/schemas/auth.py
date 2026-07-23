@@ -1,6 +1,6 @@
 import re
 from pydantic import BaseModel, EmailStr, Field, model_validator
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 class RegisterRequest(BaseModel):
@@ -47,6 +47,11 @@ class UserResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     last_login: Optional[datetime] = None
+    avatar_color: Optional[str] = None
+    avatar_url: Optional[str] = None
+    preferences: Optional[Dict[str, Any]] = None
+    sessions: Optional[List[Dict[str, Any]]] = None
+    login_history: Optional[List[Dict[str, Any]]] = None
 
     class Config:
         populate_by_name = True
@@ -79,3 +84,38 @@ class ErrorResponse(BaseModel):
     """Generic system wrapper response indicating operation issues."""
     success: bool = False
     error: ErrorBody
+
+
+class ProfileUpdateRequest(BaseModel):
+    """Payload schema validating profile updates."""
+    full_name: Optional[str] = Field(None, min_length=2, max_length=100)
+    email: Optional[EmailStr] = None
+    avatar_color: Optional[str] = None
+    avatar_url: Optional[str] = None
+    preferences: Optional[Dict[str, Any]] = None
+
+
+class PasswordChangeRequest(BaseModel):
+    """Payload schema validating password changes."""
+    old_password: str
+    new_password: str = Field(..., min_length=8, max_length=64)
+
+    @model_validator(mode="after")
+    def verify_strong_password(self) -> 'PasswordChangeRequest':
+        """Enforces complexity requirements for user passwords."""
+        pw = self.new_password
+        if not re.search(r"[A-Z]", pw):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"[a-z]", pw):
+            raise ValueError("Password must contain at least one lowercase letter")
+        if not re.search(r"[0-9]", pw):
+            raise ValueError("Password must contain at least one digit")
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", pw):
+            raise ValueError("Password must contain at least one special character")
+        return self
+
+
+class RoleChangeRequest(BaseModel):
+    """Payload schema validating admin role modifications."""
+    user_id: str
+    new_role: str = Field(..., description="Admin or Fraud Analyst")

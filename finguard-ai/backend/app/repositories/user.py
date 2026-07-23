@@ -13,4 +13,4 @@ class UserRepository(BaseRepository):
         """Queries a user document matching the unique email address."""
         # Clean email to lower for query stability
         cleaned_email = email.strip().lower()
-        return await self.find_one({"email": cleaned_email})
+        return await self.find_one({"email": cleaned_email, "is_deleted": {"$ne": True}})

@@ -9,7 +9,7 @@ Request  → PredictionRequest   (transaction data to score)
 Response → PredictionResponse  (full AI pipeline output)
 """
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -29,19 +29,16 @@ class PredictionRequest(BaseModel):
         json_schema_extra={
             "example": {
                 "amount": 1250.75,
-                "time": 86400.0,
-                "V1": -1.359,
-                "V2": -0.072,
-                "V14": -0.311,
                 "transaction_id": "TXN-20260628-001",
                 "merchant_name": "Amazon Prime",
-                "merchant_category": "E-COMMERCE",
+                "merchant_category": "RETAIL",
                 "payment_method": "CREDIT_CARD",
+                "transaction_type": "PURCHASE",
                 "country": "USA",
                 "city": "New York",
                 "ip_address": "203.0.113.42",
                 "device_id": "DEV-a1b2c3d4e5f6",
-                "generate_reports": False,
+                "generate_reports": False
             }
         }
     )
@@ -131,8 +128,9 @@ class PredictionRequest(BaseModel):
 class SHAPDriver(BaseModel):
     """A single SHAP attribution driver for a feature."""
     feature: str
-    value: float
+    value: Union[float, str]
     impact: float
+    percentage: Optional[float] = None
 
 
 class SHAPExplanation(BaseModel):
@@ -203,4 +201,8 @@ class PredictionResponse(BaseModel):
     )
     model_version: str  = Field(default="champion", description="Identifier of the model artifact used.")
     processing_time_ms: float = Field(..., description="Total pipeline latency in milliseconds.")
+    xgboost_latency_ms: float = Field(
+        default=0.0,
+        description="Real XGBoost inference latency in milliseconds."
+    )
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="UTC time of prediction.")

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
-from jose import jwt, JWTError
+from jose import jwt, JWTError, ExpiredSignatureError
 from passlib.context import CryptContext
 from app.core.config import settings
 
@@ -30,6 +30,8 @@ def create_jwt_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = 
         expire = datetime.utcnow() + timedelta(minutes=30)
 
     to_encode["exp"] = expire
+    if "iat" not in to_encode:
+        to_encode["iat"] = int(datetime.utcnow().timestamp())
 
     token = jwt.encode(
         to_encode,
@@ -41,12 +43,16 @@ def create_jwt_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = 
 
 
 def decode_jwt_token(token: str):
-    # print("DECODE SECRET:", repr(settings.JWT_SECRET))
-
-    verified = jwt.decode(
-        token,
-        settings.JWT_SECRET,
-        algorithms=[ALGORITHM]
-    )
+    """Decode and validate a JWT token. Raises ValueError on invalid or tampered tokens."""
+    try:
+        verified = jwt.decode(
+            token,
+            settings.JWT_SECRET,
+            algorithms=[ALGORITHM]
+        )
+    except ExpiredSignatureError as exc:
+        raise ValueError("Token has expired") from exc
+    except JWTError as exc:
+        raise ValueError(f"Invalid token signature: {exc}") from exc
 
     return verified

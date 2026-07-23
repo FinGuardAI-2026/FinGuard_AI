@@ -62,15 +62,15 @@ export const analyticsService = {
     const { data } = await api.get("/api/v1/analytics/model-performance");
 
     return data.map(item => ({
-        metric: item.model.toUpperCase(),
-        Accuracy: +(item.accuracy * 100).toFixed(2),
-        Precision: +(item.precision * 100).toFixed(2),
-        Recall: +(item.recall * 100).toFixed(2),
-        F1: +(item.f1 * 100).toFixed(2),
-        ROC_AUC: +(item.roc_auc * 100).toFixed(2),
+      metric: item.model.toUpperCase(),
+      Accuracy: +(item.accuracy * 100).toFixed(2),
+      Precision: +(item.precision * 100).toFixed(2),
+      Recall: +(item.recall * 100).toFixed(2),
+      F1: +(item.f1 * 100).toFixed(2),
+      ROC_AUC: +(item.roc_auc * 100).toFixed(2),
 
-        training_time_s: item.training_time_s,
-        inference_time_per_sample_ms: item.inference_time_per_sample_ms
+      training_time_s: item.training_time_s,
+      inference_time_per_sample_ms: item.inference_time_per_sample_ms
 
     }));
   },
@@ -84,6 +84,26 @@ export const analyticsService = {
     const { data } = await api.get(
       `/api/v1/reports/transaction/${transactionId}`
     );
+    return data;
+  },
+
+  async getRecentLogins() {
+    const { data } = await api.get('/api/v1/analytics/recent-logins');
+    return data;
+  },
+
+  async getAPIHealth() {
+    const { data } = await api.get('/api/v1/analytics/api-health');
+    return data.components || [];
+  },
+
+  async getTodaysPredictions() {
+    const { data } = await api.get('/api/v1/analytics/todays-predictions');
+    return data;
+  },
+
+  async getSystemStatus() {
+    const { data } = await api.get('/api/v1/analytics/system-status');
     return data;
   }
 };
