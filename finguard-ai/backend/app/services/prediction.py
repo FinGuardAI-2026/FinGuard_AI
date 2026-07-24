@@ -509,7 +509,7 @@ class PredictionService:
         """
         explainer = self._reg.shap_explainer
         if explainer is None:
-            return self._empty_shap_explanation(), None
+            return self._empty_shap_explanation(), None,0
 
         try:
             start = time.perf_counter()
